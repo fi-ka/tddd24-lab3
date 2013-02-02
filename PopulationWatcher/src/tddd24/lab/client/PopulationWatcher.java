@@ -28,6 +28,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class PopulationWatcher implements EntryPoint {
 
+	
+	
 	private static final int REFRESH_INTERVAL = 5000; // ms
 	private VerticalPanel mainPanel = new VerticalPanel();
 	private FlexTable regionFlexTable = new FlexTable();
