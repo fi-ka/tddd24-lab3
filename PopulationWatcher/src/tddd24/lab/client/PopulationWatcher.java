@@ -24,6 +24,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+
 public class PopulationWatcher implements EntryPoint {
 
 	private static final int REFRESH_INTERVAL = 5000; // ms
