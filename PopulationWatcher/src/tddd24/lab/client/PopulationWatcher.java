@@ -38,13 +38,14 @@ public class PopulationWatcher implements EntryPoint {
 	private ArrayList<String> addedRegions = new ArrayList<String>();
 
 	private ArrayList<String> regions = new ArrayList<String>();
+	private ArrayList<Integer> populations = new ArrayList<Integer>();
 
 	/**
 	 * Entry point method.
 	 */
 	public void onModuleLoad() {
 		// initiate available regions
-		regions.add("stockholms l\u00e4n");
+	/*	regions.add("stockholms l\u00e4n");
 		regions.add("uppsala l\u00e4n");
 		regions.add("s\u00f6dermanlands l\u00e4n");
 		regions.add("\u00f6sterg\u00f6tlands l\u00e4n");
@@ -65,7 +66,8 @@ public class PopulationWatcher implements EntryPoint {
 		regions.add("j\u00e4mtlands l\u00e4n");
 		regions.add("v\u00e4sterbottens l\u00e4n");
 		regions.add("norrbottens l\u00e4n");
-
+*/
+		initiateDataSets();
 		// Create table for region data.
 		regionFlexTable.setText(0, 0, "Region");
 		regionFlexTable.setText(0, 1, "Population");
@@ -219,11 +221,11 @@ public class PopulationWatcher implements EntryPoint {
 	 */
 	private void updateTable(RegionPopulation population) {
 		// Make sure the region is still in the region table.
-		if (!addedRegions.contains(population.getSymbol())) {
+		if (!addedRegions.contains(population.getRegion())) {
 			return;
 		}
 
-		int row = addedRegions.indexOf(population.getSymbol()) + 1;
+		int row = addedRegions.indexOf(population.getRegion()) + 1;
 
 		// Format the data in the population and Change fields.
 		String populationText = NumberFormat.getFormat("#,##0").format(
@@ -248,5 +250,34 @@ public class PopulationWatcher implements EntryPoint {
 		}
 
 		changeWidget.setStyleName(changeStyleName);
+	}
+	
+	private void initiateDataSets()
+	{
+		addRegion("stockholms län");
+		addRegion("uppsala län");
+		addRegion("södermanlands län");
+		addRegion("östergötlands län");
+		addRegion("jönköpings län");
+		addRegion("kronobergs län");
+		addRegion("kalmar län");
+		addRegion("gotlands län");
+		addRegion("blekinge län");
+		addRegion("skåne län");
+		addRegion("hallands län");
+		addRegion("västra götalands län");
+		addRegion("värmlands län");
+		addRegion("örebro län");
+		addRegion("västmanlands län");
+		addRegion("dalarnas län");
+		addRegion("gävleborgs län");
+		addRegion("västernorrlands län");
+		addRegion("jämtlands län");
+		addRegion("västerbottens län");
+		addRegion("norrbottens län");	
+	}
+	
+	private void addRegion(String region){
+		regions.add(region.replace('ä', '\u00e4').replace('ö', '\u00f6').replace('å', '\u00e5'));
 	}
 }

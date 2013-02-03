@@ -2,21 +2,21 @@ package tddd24.lab.client;
 
 public class RegionPopulation {
 
-	  private String symbol;
+	  private String region;
 	  private double population;
 	  private double change;
 
 	  public RegionPopulation() {
 	  }
 
-	  public RegionPopulation(String symbol, double population, double change) {
-	    this.symbol = symbol;
+	  public RegionPopulation(String region, double population, double change) {
+	    this.region = region;
 	    this.population = population;
 	    this.change = change;
 	  }
 
-	  public String getSymbol() {
-	    return this.symbol;
+	  public String getRegion() {
+	    return this.region;
 	  }
 
 	  public double getPopulation() {
@@ -31,8 +31,8 @@ public class RegionPopulation {
 	    return 100.0 * this.change / this.population;
 	  }
 
-	  public void setSymbol(String symbol) {
-	    this.symbol = symbol;
+	  public void setRegion(String region) {
+	    this.region = region;
 	  }
 
 	  public void setPopulation(double population) {
