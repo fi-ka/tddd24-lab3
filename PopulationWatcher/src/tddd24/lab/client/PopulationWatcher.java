@@ -48,14 +48,14 @@ public class PopulationWatcher implements EntryPoint {
 		regions.add("uppsala l\u00e4n");
 		regions.add("s\u00f6dermanlands l\u00e4n");
 		regions.add("\u00f6sterg\u00f6tlands l\u00e4n");
-		regions.add("j\u00f6nköpings l\u00e4n");
+		regions.add("j\u00f6nk\u00f6pings l\u00e4n");
 		regions.add("kronobergs l\u00e4n");
 		regions.add("kalmar l\u00e4n");
 		regions.add("gotlands l\u00e4n");
 		regions.add("blekinge l\u00e4n");
 		regions.add("sk\u00e5ne l\u00e4n");
 		regions.add("hallands l\u00e4n");
-		regions.add("v\u00e4stra G\u00f6talands l\u00e4n");
+		regions.add("v\u00e4stra g\u00f6talands l\u00e4n");
 		regions.add("v\u00e4rmlands l\u00e4n");
 		regions.add("\u00f6rebro l\u00e4n");
 		regions.add("v\u00e4stmanlands l\u00e4n");
@@ -227,7 +227,7 @@ public class PopulationWatcher implements EntryPoint {
 
 		// Format the data in the population and Change fields.
 		String populationText = NumberFormat.getFormat("#,##0").format(
-				population.getPrice());
+				population.getPopulation());
 		String changeText = NumberFormat.getFormat("+#,##0;-#,##0").format(
 				population.getChange());
 		String changePercentText = NumberFormat

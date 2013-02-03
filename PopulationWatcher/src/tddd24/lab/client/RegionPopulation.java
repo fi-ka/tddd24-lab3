@@ -3,15 +3,15 @@ package tddd24.lab.client;
 public class RegionPopulation {
 
 	  private String symbol;
-	  private double price;
+	  private double population;
 	  private double change;
 
 	  public RegionPopulation() {
 	  }
 
-	  public RegionPopulation(String symbol, double price, double change) {
+	  public RegionPopulation(String symbol, double population, double change) {
 	    this.symbol = symbol;
-	    this.price = price;
+	    this.population = population;
 	    this.change = change;
 	  }
 
@@ -19,8 +19,8 @@ public class RegionPopulation {
 	    return this.symbol;
 	  }
 
-	  public double getPrice() {
-	    return this.price;
+	  public double getPopulation() {
+	    return this.population;
 	  }
 
 	  public double getChange() {
@@ -28,15 +28,15 @@ public class RegionPopulation {
 	  }
 
 	  public double getChangePercent() {
-	    return 100.0 * this.change / this.price;
+	    return 100.0 * this.change / this.population;
 	  }
 
 	  public void setSymbol(String symbol) {
 	    this.symbol = symbol;
 	  }
 
-	  public void setPrice(double price) {
-	    this.price = price;
+	  public void setPopulation(double population) {
+	    this.population = population;
 	  }
 
 	  public void setChange(double change) {
