@@ -253,7 +253,8 @@ public class PopulationWatcher implements EntryPoint {
 		addAvailableRegion("västernorrlands län");
 		addAvailableRegion("jämtlands län");
 		addAvailableRegion("västerbottens län");
-		addAvailableRegion("norrbottens län");	
+		addAvailableRegion("norrbottens län");
+		addAvailableRegion("norrbottens län");
 	}
 	
 	private void addAvailableRegion(String region){
