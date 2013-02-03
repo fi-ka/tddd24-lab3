@@ -233,30 +233,30 @@ public class PopulationWatcher implements EntryPoint {
 	
 	private void initiateDataSets()
 	{
-		addRegion("stockholms län");
-		addRegion("uppsala län");
-		addRegion("södermanlands län");
-		addRegion("östergötlands län");
-		addRegion("jönköpings län");
-		addRegion("kronobergs län");
-		addRegion("kalmar län");
-		addRegion("gotlands län");
-		addRegion("blekinge län");
-		addRegion("skåne län");
-		addRegion("hallands län");
-		addRegion("västra götalands län");
-		addRegion("värmlands län");
-		addRegion("örebro län");
-		addRegion("västmanlands län");
-		addRegion("dalarnas län");
-		addRegion("gävleborgs län");
-		addRegion("västernorrlands län");
-		addRegion("jämtlands län");
-		addRegion("västerbottens län");
-		addRegion("norrbottens län");	
+		addAvailableRegion("stockholms län");
+		addAvailableRegion("uppsala län");
+		addAvailableRegion("södermanlands län");
+		addAvailableRegion("östergötlands län");
+		addAvailableRegion("jönköpings län");
+		addAvailableRegion("kronobergs län");
+		addAvailableRegion("kalmar län");
+		addAvailableRegion("gotlands län");
+		addAvailableRegion("blekinge län");
+		addAvailableRegion("skåne län");
+		addAvailableRegion("hallands län");
+		addAvailableRegion("västra götalands län");
+		addAvailableRegion("värmlands län");
+		addAvailableRegion("örebro län");
+		addAvailableRegion("västmanlands län");
+		addAvailableRegion("dalarnas län");
+		addAvailableRegion("gävleborgs län");
+		addAvailableRegion("västernorrlands län");
+		addAvailableRegion("jämtlands län");
+		addAvailableRegion("västerbottens län");
+		addAvailableRegion("norrbottens län");	
 	}
 	
-	private void addRegion(String region){
+	private void addAvailableRegion(String region){
 		regions.add(region.replace('ä', '\u00e4').replace('ö', '\u00f6').replace('å', '\u00e5'));
 	}
 }
