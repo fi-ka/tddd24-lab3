@@ -45,8 +45,8 @@ public class PopulationWatcher implements EntryPoint {
 	 */
 	public void onModuleLoad() {
 		// initiate available regions
-
 		initiateDataSets();
+		
 		// Create table for region data.
 		regionFlexTable.setText(0, 0, "Region");
 		regionFlexTable.setText(0, 1, "Population");
@@ -156,23 +156,23 @@ public class PopulationWatcher implements EntryPoint {
 	}
 
 	/**
-	 * Generate random population
+	 * Generate random change to populations
 	 */
 	private void refreshWatchList() {
-		final int MAX_POPULATION = 1000000; // 1 000 000
-		final double MAX_POPULATION_CHANGE = 0.01; // +/- 1%
+		final float MAX_POPULATION_CHANGE = 0.01f; // +/- 1%
 
-		RegionPopulation[] populations = new RegionPopulation[addedRegions.size()];
+		RegionPopulation[] regionPopulations = new RegionPopulation[addedRegions.size()];
 		for (int i = 0; i < addedRegions.size(); i++) {
-			int population = Random.nextInt(MAX_POPULATION);
+			int population = populations.get(regions.indexOf(addedRegions.get(i)));
+			int maxChangeAmount = Math.round(population * MAX_POPULATION_CHANGE);
 			int change = Random
-					.nextInt((int) (population * MAX_POPULATION_CHANGE));
+					.nextInt((int) (maxChangeAmount)) - (maxChangeAmount/2);
 
-			populations[i] = new RegionPopulation(addedRegions.get(i), population,
+			regionPopulations[i] = new RegionPopulation(addedRegions.get(i), population+change,
 					change);
 		}
 
-		updateTable(populations);
+		updateTable(regionPopulations);
 	}
 
 	/**
@@ -233,31 +233,53 @@ public class PopulationWatcher implements EntryPoint {
 	
 	private void initiateDataSets()
 	{
-		addAvailableRegion("stockholms län");
-		addAvailableRegion("uppsala län");
-		addAvailableRegion("södermanlands län");
-		addAvailableRegion("östergötlands län");
-		addAvailableRegion("jönköpings län");
-		addAvailableRegion("kronobergs län");
-		addAvailableRegion("kalmar län");
-		addAvailableRegion("gotlands län");
-		addAvailableRegion("blekinge län");
-		addAvailableRegion("skåne län");
-		addAvailableRegion("hallands län");
-		addAvailableRegion("västra götalands län");
-		addAvailableRegion("värmlands län");
-		addAvailableRegion("örebro län");
-		addAvailableRegion("västmanlands län");
-		addAvailableRegion("dalarnas län");
-		addAvailableRegion("gävleborgs län");
-		addAvailableRegion("västernorrlands län");
-		addAvailableRegion("jämtlands län");
-		addAvailableRegion("västerbottens län");
-		addAvailableRegion("norrbottens län");
-		addAvailableRegion("norrbottens län");
+		addAvailableRegion("stockholms l\u00e4n");
+		addAvailableRegion("uppsala l\u00e4n");
+		addAvailableRegion("s\u00f6dermanlands l\u00e4n");
+		addAvailableRegion("\u00f6sterg\u00f6tlands l\u00e4n");
+		addAvailableRegion("j\u00f6nk\u00f6pings l\u00e4n");
+		addAvailableRegion("kronobergs l\u00e4n");
+		addAvailableRegion("kalmar l\u00e4n");
+		addAvailableRegion("gotlands l\u00e4n");
+		addAvailableRegion("blekinge l\u00e4n");
+		addAvailableRegion("sk\u00e5ne l\u00e4n");
+		addAvailableRegion("hallands l\u00e4n");
+		addAvailableRegion("v\u00e4stra g\u00f6talands l\u00e4n");
+		addAvailableRegion("v\u00e4rmlands l\u00e4n");
+		addAvailableRegion("\u00f6rebro l\u00e4n");
+		addAvailableRegion("v\u00e4stmanlands l\u00e4n");
+		addAvailableRegion("dalarnas l\u00e4n");
+		addAvailableRegion("g\u00e4vleborgs l\u00e4n");
+		addAvailableRegion("v\u00e4sternorrlands l\u00e4n");
+		addAvailableRegion("j\u00e4mtlands l\u00e4n");
+		addAvailableRegion("v\u00e4sterbottens l\u00e4n");
+		addAvailableRegion("norrbottens l\u00e4n");
+		addAvailableRegion("norrbottens l\u00e4n");
+		
+		populations.add(2091473);
+		populations.add(338630);
+		populations.add(272563);
+		populations.add(431075);
+		populations.add(337896);
+		populations.add(184654);
+		populations.add(233090);
+		populations.add(57308);
+		populations.add(152979);
+		populations.add(1252933);
+		populations.add(301724);
+		populations.add(1590604);
+		populations.add(272736);
+		populations.add(281572);
+		populations.add(254257);
+		populations.add(276565);
+		populations.add(276130);
+		populations.add(242155);
+		populations.add(126299);
+		populations.add(259667);
+		populations.add(248545);
 	}
 	
 	private void addAvailableRegion(String region){
-		regions.add(region.replace('ä', '\u00e4').replace('ö', '\u00f6').replace('å', '\u00e5'));
+		regions.add(region);
 	}
 }
