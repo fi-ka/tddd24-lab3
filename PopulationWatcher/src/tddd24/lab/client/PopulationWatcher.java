@@ -1,22 +1,21 @@
 package tddd24.lab.client;
 
-
-
 import java.util.ArrayList;
 import java.util.Date;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
-import com.google.gwt.user.client.Random;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -24,7 +23,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-
 
 public class PopulationWatcher implements EntryPoint {
 
@@ -40,13 +38,16 @@ public class PopulationWatcher implements EntryPoint {
 	private ArrayList<String> regions = new ArrayList<String>();
 	private ArrayList<Integer> populations = new ArrayList<Integer>();
 
+	private RegionPopulationServiceAsync regionPopulationSvc = GWT
+			.create(RegionPopulationService.class);
+
 	/**
 	 * Entry point method.
 	 */
 	public void onModuleLoad() {
 		// initiate available regions
 		initiateDataSets();
-		
+
 		// Create table for region data.
 		regionFlexTable.setText(0, 0, "Region");
 		regionFlexTable.setText(0, 1, "Population");
@@ -109,8 +110,8 @@ public class PopulationWatcher implements EntryPoint {
 	}
 
 	/**
-	 * Add Region to FlexTable. Executed when the user clicks the addRegionButton
-	 * or presses enter in the newRegionTextBox.
+	 * Add Region to FlexTable. Executed when the user clicks the
+	 * addRegionButton or presses enter in the newRegionTextBox.
 	 */
 	private void addRegion() {
 		final String symbol = newRegionTextBox.getText().toLowerCase().trim();
@@ -159,24 +160,28 @@ public class PopulationWatcher implements EntryPoint {
 	 * Generate random change to populations
 	 */
 	private void refreshWatchList() {
-		final float MAX_POPULATION_CHANGE = 0.01f; // +/- 1%
-
-		RegionPopulation[] regionPopulations = new RegionPopulation[addedRegions.size()];
-		for (int i = 0; i < addedRegions.size(); i++) {
-			int population = populations.get(regions.indexOf(addedRegions.get(i)));
-			int maxChangeAmount = Math.round(population * MAX_POPULATION_CHANGE);
-			int change = Random
-					.nextInt((int) (maxChangeAmount)) - (maxChangeAmount/2);
-
-			regionPopulations[i] = new RegionPopulation(addedRegions.get(i), population+change,
-					change);
+		// Initialize the service proxy.
+		if (regionPopulationSvc == null) {
+			regionPopulationSvc = GWT.create(RegionPopulationService.class);
 		}
+		// Set up the callback object.
+		AsyncCallback<RegionPopulation[]> callback = new AsyncCallback<RegionPopulation[]>() {
+			public void onFailure(Throwable caught) {
+				// TODO: Do something with errors.
+			}
 
-		updateTable(regionPopulations);
+			public void onSuccess(RegionPopulation[] result) {
+				updateTable(result);
+			}
+		};
+		// Make the call to the stock price service.
+		regionPopulationSvc.getPopulations(regions.toArray(new String[0]),
+				callback);
 	}
 
 	/**
-	 * Update the Population and Change fields for all the rows in the region table.
+	 * Update the Population and Change fields for all the rows in the region
+	 * table.
 	 * 
 	 * @param populations
 	 *            Region data for all rows.
@@ -230,9 +235,8 @@ public class PopulationWatcher implements EntryPoint {
 
 		changeWidget.setStyleName(changeStyleName);
 	}
-	
-	private void initiateDataSets()
-	{
+
+	private void initiateDataSets() {
 		addAvailableRegion("stockholms l\u00e4n");
 		addAvailableRegion("uppsala l\u00e4n");
 		addAvailableRegion("s\u00f6dermanlands l\u00e4n");
@@ -255,7 +259,7 @@ public class PopulationWatcher implements EntryPoint {
 		addAvailableRegion("v\u00e4sterbottens l\u00e4n");
 		addAvailableRegion("norrbottens l\u00e4n");
 		addAvailableRegion("norrbottens l\u00e4n");
-		
+
 		populations.add(2091473);
 		populations.add(338630);
 		populations.add(272563);
@@ -277,10 +281,10 @@ public class PopulationWatcher implements EntryPoint {
 		populations.add(126299);
 		populations.add(259667);
 		populations.add(248545);
-		
+
 	}
-	
-	private void addAvailableRegion(String region){
+
+	private void addAvailableRegion(String region) {
 		regions.add(region);
 	}
 }
