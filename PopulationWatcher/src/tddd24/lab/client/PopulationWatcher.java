@@ -277,6 +277,7 @@ public class PopulationWatcher implements EntryPoint {
 		populations.add(126299);
 		populations.add(259667);
 		populations.add(248545);
+		
 	}
 	
 	private void addAvailableRegion(String region){
