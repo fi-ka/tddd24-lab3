@@ -1,0 +1,41 @@
+"Folkmängden efter region, tabellinnehåll och tid"
+
+" ";"Folkmängd";"Folkökning"
+" ";"2011";"2011"
+"01 Stockholms län";2091473;37130
+"03 Uppsala län";338630;2748
+"04 Södermanlands län";272563;1825
+"05 Östergötlands län";431075;1433
+"06 Jönköpings län";337896;1030
+"07 Kronobergs län";184654;714
+"08 Kalmar län";233090;-446
+"09 Gotlands län";57308;39
+"10 Blekinge län";152979;-248
+"12 Skåne län";1252933;9604
+"13 Hallands län";301724;2240
+"14 Västra Götalands län";1590604;10307
+"17 Värmlands län";272736;-529
+"18 Örebro län";281572;1342
+"19 Västmanlands län";254257;1501
+"20 Dalarnas län";276565;-482
+"21 Gävleborgs län";276130;-378
+"22 Västernorrlands län";242155;-470
+"23 Jämtlands län";126299;-392
+"24 Västerbottens län";259667;381
+"25 Norrbottens län";248545;-64
+
+"Uppgifterna avser förhållandena den 31 december för valt/valda "
+"år enligt den regionala indelning som gäller den 1 januari året "
+"efter."
+
+"Folkökningen definieras som skillnaden mellan folkmängden vid "
+"årets början och årets slut."
+
+"Fr o m 2007-01-01 utökas Uppsala län med Heby kommun. Observera "
+"att länssiffrorna inte är jämförbara med länssiffrorna bakåt "
+"i tiden."
+
+"Fr o m 2007-01-01 minskar Västmanlands län med Heby kommun. "
+"Observera att länssiffrorna inte är jämförbara med länssiffrorna "
+"bakåt i tiden."
+
