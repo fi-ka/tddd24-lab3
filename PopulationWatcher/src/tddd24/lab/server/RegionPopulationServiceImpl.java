@@ -3,6 +3,7 @@ package tddd24.lab.server;
 import java.util.ArrayList;
 import java.util.Random;
 
+import tddd24.lab.client.DelistedException;
 import tddd24.lab.client.RegionPopulation;
 import tddd24.lab.client.RegionPopulationService;
 
@@ -12,18 +13,24 @@ public class RegionPopulationServiceImpl extends RemoteServiceServlet implements
 		RegionPopulationService {
 
 	private ArrayList<String> regions = new ArrayList<String>();
+	private ArrayList<String> delistedRegions = new ArrayList<String>();
 	private ArrayList<Integer> populations = new ArrayList<Integer>();
+	
 
 	public RegionPopulationServiceImpl() {
 		initiateDataSets();
 	}
 
-	public RegionPopulation[] getPopulations(String[] addedRegions) {
+	public RegionPopulation[] getPopulations(String[] addedRegions)  throws DelistedException{
 		final float MAX_POPULATION_CHANGE = 0.01f; // +/- .5%
 		Random rnd = new Random();
 
 		RegionPopulation[] regionPopulations = new RegionPopulation[addedRegions.length];
 		for (int i = 0; i < addedRegions.length; i++) {
+			if(delistedRegions.contains(addedRegions[i]))
+			{
+				throw new DelistedException(addedRegions[i]);
+			}
 			int population = populations.get(regions.indexOf(addedRegions[i]));
 			int maxChangeAmount = Math
 					.round(population * MAX_POPULATION_CHANGE);
@@ -37,8 +44,15 @@ public class RegionPopulationServiceImpl extends RemoteServiceServlet implements
 		return regionPopulations;
 	}
 	
-	public Boolean isValidRegion(String region) {
+	public Boolean isValidRegion(String region){
+	
 		return regions.contains(region);
+	}
+	
+
+	public void delistRegion(String region) {
+		if(!delistedRegions.contains(region))
+			delistedRegions.add(region);
 	}
 
 	private void initiateDataSets() {
@@ -63,7 +77,7 @@ public class RegionPopulationServiceImpl extends RemoteServiceServlet implements
 		regions.add("j\u00e4mtlands l\u00e4n");
 		regions.add("v\u00e4sterbottens l\u00e4n");
 		regions.add("norrbottens l\u00e4n");
-
+		
 		populations.add(2091473);
 		populations.add(338630);
 		populations.add(272563);
@@ -87,6 +101,4 @@ public class RegionPopulationServiceImpl extends RemoteServiceServlet implements
 		populations.add(248545);
 
 	}
-
-
 }

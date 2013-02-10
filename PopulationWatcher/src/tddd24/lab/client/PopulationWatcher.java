@@ -27,12 +27,16 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class PopulationWatcher implements EntryPoint {
 
 	private static final int REFRESH_INTERVAL = 5000; // ms
+
 	private VerticalPanel mainPanel = new VerticalPanel();
 	private FlexTable regionFlexTable = new FlexTable();
 	private HorizontalPanel addPanel = new HorizontalPanel();
 	private TextBox newRegionTextBox = new TextBox();
 	private Button addRegionButton = new Button("Add");
+	private Button delistRegionButton = new Button("Delist");
 	private Label lastUpdatedLabel = new Label();
+	private Label errorMsgLabel = new Label();
+
 	private ArrayList<String> addedRegions = new ArrayList<String>();
 
 	private RegionPopulationServiceAsync regionPopulationSvc = GWT
@@ -63,12 +67,18 @@ public class PopulationWatcher implements EntryPoint {
 		// Assemble Add Region panel.
 		addPanel.add(newRegionTextBox);
 		addPanel.add(addRegionButton);
+		addPanel.add(delistRegionButton);
 		addPanel.addStyleName("addPanel");
 
 		// Assemble Main panel.
+		errorMsgLabel.setStyleName("errorMessage");
+		errorMsgLabel.setVisible(false);
+
+		lastUpdatedLabel.setText("Last update :");
+		mainPanel.add(errorMsgLabel);
 		mainPanel.add(regionFlexTable);
-		mainPanel.add(addPanel);
 		mainPanel.add(lastUpdatedLabel);
+		mainPanel.add(addPanel);
 
 		// Associate the Main panel with the HTML host page.
 		RootPanel.get("regionList").add(mainPanel);
@@ -94,6 +104,15 @@ public class PopulationWatcher implements EntryPoint {
 			}
 		});
 
+		// listen for mouse events on the Delist button.
+		delistRegionButton.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				delistRegion();
+			}
+		});
+
 		// Listen for keyboard events in the input box.
 		newRegionTextBox.addKeyPressHandler(new KeyPressHandler() {
 			public void onKeyPress(KeyPressEvent event) {
@@ -113,34 +132,30 @@ public class PopulationWatcher implements EntryPoint {
 				.trim();
 		newRegionTextBox.setFocus(true);
 
-		// Must be a valid region
-
-		// Initialize the service proxy.
+		// Initialize the service proxy for a region check.
 		if (regionPopulationSvc == null) {
 			regionPopulationSvc = GWT.create(RegionPopulationService.class);
 		}
 		// Set up the callback object.
 		AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
 			public void onFailure(Throwable caught) {
-				// TODO: Do something with errors.
 			}
 
 			public void onSuccess(Boolean result) {
-				if (result)
+				if (result) {
 					addRegionToTable(newRegion);
-				else {
+				} else {
 					Window.alert("'" + newRegion + "' is not a valid symbol.");
 					newRegionTextBox.selectAll();
 					return;
 				}
 			}
 		};
-		// Make the call to the stock price service.
+		// Make the call to the region population service.
 		regionPopulationSvc.isValidRegion(newRegion, callback);
 	}
-	
-	private void addRegionToTable(final String region)
-	{
+
+	private void addRegionToTable(final String region) {
 		// Don't add the region if it's already in the table.
 		if (addedRegions.contains(region))
 			return;
@@ -173,6 +188,23 @@ public class PopulationWatcher implements EntryPoint {
 		refreshWatchList();
 	}
 
+	private void delistRegion() {
+		// Initialize the service proxy for a region check.
+		if (regionPopulationSvc == null) {
+			regionPopulationSvc = GWT.create(RegionPopulationService.class);
+		}
+		// Set up the callback object.
+		AsyncCallback<Void> callback = new AsyncCallback<Void>() {
+			public void onFailure(Throwable caught) {
+			}
+
+			public void onSuccess(Void result) {
+			}
+		};
+		
+		regionPopulationSvc.delistRegion(newRegionTextBox.getText(), callback);
+	}
+
 	/**
 	 * Generate random change to populations
 	 */
@@ -184,7 +216,17 @@ public class PopulationWatcher implements EntryPoint {
 		// Set up the callback object.
 		AsyncCallback<RegionPopulation[]> callback = new AsyncCallback<RegionPopulation[]>() {
 			public void onFailure(Throwable caught) {
-				// TODO: Do something with errors.
+				// If the region is in the list of delisted regions, display an
+				// error message.
+				String details = caught.getMessage();
+				if (caught instanceof DelistedException) {
+					details = "Region '"
+							+ ((DelistedException) caught).getRegion()
+							+ "' is currently not available";
+				}
+
+				errorMsgLabel.setText("Error: " + details);
+				errorMsgLabel.setVisible(true);
 			}
 
 			public void onSuccess(RegionPopulation[] result) {
@@ -212,6 +254,9 @@ public class PopulationWatcher implements EntryPoint {
 		lastUpdatedLabel.setText("Last update : "
 				+ DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM)
 						.format(new Date()));
+
+		// Clear any errors.
+		errorMsgLabel.setVisible(false);
 	}
 
 	/**
