@@ -1,6 +1,8 @@
 package tddd24.lab.client;
 
-public class RegionPopulation {
+import java.io.Serializable;
+
+public class RegionPopulation implements Serializable{
 
 	  private String region;
 	  private double population;
