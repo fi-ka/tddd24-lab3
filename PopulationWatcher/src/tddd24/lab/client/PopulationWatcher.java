@@ -23,12 +23,16 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.visualization.client.DataTable;
+import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
 
 public class PopulationWatcher implements EntryPoint {
 
 	private static final int REFRESH_INTERVAL = 5000; // ms
 
-	private VerticalPanel mainPanel = new VerticalPanel();
+	private HorizontalPanel mainPanel = new HorizontalPanel();
+	private VerticalPanel leftPanel = new VerticalPanel();
+	private VerticalPanel rightPanel = new VerticalPanel();
 	private FlexTable regionFlexTable = new FlexTable();
 	private HorizontalPanel addPanel = new HorizontalPanel();
 	private TextBox newRegionTextBox = new TextBox();
@@ -36,7 +40,9 @@ public class PopulationWatcher implements EntryPoint {
 	private Button delistRegionButton = new Button("Delist");
 	private Label lastUpdatedLabel = new Label();
 	private Label errorMsgLabel = new Label();
-
+	
+	private MyPieChartHandler pieHandler;
+	
 	private ArrayList<String> addedRegions = new ArrayList<String>();
 
 	private RegionPopulationServiceAsync regionPopulationSvc = GWT
@@ -64,22 +70,29 @@ public class PopulationWatcher implements EntryPoint {
 		regionFlexTable.getCellFormatter().addStyleName(0, 3,
 				"watchListRemoveColumn");
 
+		// Create piechart and add to rightpanel
+		MyPieChartHandler pieHandler = new MyPieChartHandler(rightPanel);
+
 		// Assemble Add Region panel.
 		addPanel.add(newRegionTextBox);
 		addPanel.add(addRegionButton);
 		addPanel.add(delistRegionButton);
 		addPanel.addStyleName("addPanel");
 
-		// Assemble Main panel.
+		// Assemble left panel.
 		errorMsgLabel.setStyleName("errorMessage");
 		errorMsgLabel.setVisible(false);
 
 		lastUpdatedLabel.setText("Last update :");
-		mainPanel.add(errorMsgLabel);
-		mainPanel.add(regionFlexTable);
-		mainPanel.add(lastUpdatedLabel);
-		mainPanel.add(addPanel);
-
+		leftPanel.add(errorMsgLabel);
+		leftPanel.add(regionFlexTable);
+		leftPanel.add(lastUpdatedLabel);
+		leftPanel.add(addPanel);
+		
+		// Assemble Main panel
+		mainPanel.add(leftPanel);
+		mainPanel.add(rightPanel);
+		
 		// Associate the Main panel with the HTML host page.
 		RootPanel.get("regionList").add(mainPanel);
 
@@ -199,9 +212,15 @@ public class PopulationWatcher implements EntryPoint {
 			}
 
 			public void onSuccess(Void result) {
+				DataTable pieData = pieHandler.getPieData();
+				PieChart pie = pieHandler.getPie();
+				pieData.addRow();
+				pieData.setValue(2, 0, "Kalmar");
+				pieData.setValue(2, 1, 50);
+				pie.draw(pieData);
 			}
 		};
-		
+
 		regionPopulationSvc.delistRegion(newRegionTextBox.getText(), callback);
 	}
 
@@ -297,4 +316,6 @@ public class PopulationWatcher implements EntryPoint {
 
 		changeWidget.setStyleName(changeStyleName);
 	}
+
+
 }
