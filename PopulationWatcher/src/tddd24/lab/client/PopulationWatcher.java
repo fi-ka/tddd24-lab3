@@ -24,12 +24,16 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.visualization.client.DataTable;
+import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
 
 public class PopulationWatcher implements EntryPoint {
 
 	private static final int REFRESH_INTERVAL = 5000; // ms
 
-	private VerticalPanel mainPanel = new VerticalPanel();
+	private HorizontalPanel mainPanel = new HorizontalPanel();
+	private VerticalPanel leftPanel = new VerticalPanel();
+	private VerticalPanel rightPanel = new VerticalPanel();
 	private FlexTable regionFlexTable = new FlexTable();
 	private HorizontalPanel addPanel = new HorizontalPanel();
 	private TextBox newRegionTextBox = new TextBox();
@@ -39,6 +43,8 @@ public class PopulationWatcher implements EntryPoint {
 	private Label errorMsgLabel = new Label();
 	private FlexTable delistedRegionsTable = new FlexTable();
 
+	private MyPieChartHandler pieHandler;
+	
 	private ArrayList<String> addedRegions = new ArrayList<String>();
 
 	private RegionPopulationServiceAsync regionPopulationSvc = GWT
@@ -72,14 +78,17 @@ public class PopulationWatcher implements EntryPoint {
 		delistedRegionsTable.addStyleName("delistTable");
 		updateDelistedRegionTable();
 		
-		
+		// Create piechart and add to rightpanel
+		MyPieChartHandler pieHandler = new MyPieChartHandler(rightPanel);
+
 		// Assemble Add Region panel.
 		addPanel.add(newRegionTextBox);
 		addPanel.add(addRegionButton);
 		addPanel.add(delistRegionButton);
 		addPanel.addStyleName("addPanel");
 		
-		// Assemble Main panel.
+
+		// Assemble left panel.
 		errorMsgLabel.setStyleName("errorMessage");
 		errorMsgLabel.setVisible(false);
 
@@ -90,8 +99,15 @@ public class PopulationWatcher implements EntryPoint {
 		mainPanel.add(addPanel);
 		mainPanel.add(delistedRegionsTable);
 		
+		leftPanel.add(errorMsgLabel);
+		leftPanel.add(regionFlexTable);
+		leftPanel.add(lastUpdatedLabel);
+		leftPanel.add(addPanel);
 		
-
+		// Assemble Main panel
+		mainPanel.add(leftPanel);
+		mainPanel.add(rightPanel);
+		
 		// Associate the Main panel with the HTML host page.
 		RootPanel.get("regionList").add(mainPanel);
 
@@ -212,9 +228,15 @@ public class PopulationWatcher implements EntryPoint {
 
 			public void onSuccess(Void result) {
 				updateDelistedRegionTable();
+			/*	DataTable pieData = pieHandler.getPieData();
+				PieChart pie = pieHandler.getPie();
+				pieData.addRow();
+				pieData.setValue(2, 0, "Kalmar");
+				pieData.setValue(2, 1, 50);
+				pie.draw(pieData);*/
 			}
 		};
-		
+
 		regionPopulationSvc.delistRegion(newRegionTextBox.getText(), callback);
 	}
 
