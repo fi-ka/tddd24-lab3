@@ -3,9 +3,10 @@ package tddd24.lab.client;
 import java.util.ArrayList;
 import java.util.Date;
 
+import com.allen_sauer.gwt.dnd.client.PickupDragController;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.shared.GWT;
-import com.google.gwt.dev.js.rhino.ObjToIntMap.Iterator;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -24,8 +25,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.visualization.client.DataTable;
-import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
 
 public class PopulationWatcher implements EntryPoint {
 
@@ -44,11 +43,14 @@ public class PopulationWatcher implements EntryPoint {
 	private FlexTable delistedRegionsTable = new FlexTable();
 
 	private MyPieChartHandler pieHandler;
-	
+
 	private ArrayList<String> addedRegions = new ArrayList<String>();
 
 	private RegionPopulationServiceAsync regionPopulationSvc = GWT
 			.create(RegionPopulationService.class);
+
+	private MyFlexTableDragController dragController;
+	private MyChartDropController dropController;
 
 	/**
 	 * Entry point method.
@@ -72,12 +74,13 @@ public class PopulationWatcher implements EntryPoint {
 		regionFlexTable.getCellFormatter().addStyleName(0, 3,
 				"watchListRemoveColumn");
 
-		//create table for delisted regions and set style
+		// create table for delisted regions and set style
 		delistedRegionsTable.setText(0, 0, "Currently Unavailable regions");
-		delistedRegionsTable.getCellFormatter().addStyleName(0,0, "delistTableHeader");
+		delistedRegionsTable.getCellFormatter().addStyleName(0, 0,
+				"delistTableHeader");
 		delistedRegionsTable.addStyleName("delistTable");
 		updateDelistedRegionTable();
-		
+
 		// Create piechart and add to rightpanel
 		MyPieChartHandler pieHandler = new MyPieChartHandler(rightPanel);
 
@@ -86,28 +89,23 @@ public class PopulationWatcher implements EntryPoint {
 		addPanel.add(addRegionButton);
 		addPanel.add(delistRegionButton);
 		addPanel.addStyleName("addPanel");
-		
 
 		// Assemble left panel.
 		errorMsgLabel.setStyleName("errorMessage");
 		errorMsgLabel.setVisible(false);
 
 		lastUpdatedLabel.setText("Last update :");
-		mainPanel.add(errorMsgLabel);
-		mainPanel.add(regionFlexTable);
-		mainPanel.add(lastUpdatedLabel);
-		mainPanel.add(addPanel);
-		mainPanel.add(delistedRegionsTable);
-		
+
 		leftPanel.add(errorMsgLabel);
 		leftPanel.add(regionFlexTable);
 		leftPanel.add(lastUpdatedLabel);
 		leftPanel.add(addPanel);
-		
+		leftPanel.add(delistedRegionsTable);
+
 		// Assemble Main panel
 		mainPanel.add(leftPanel);
 		mainPanel.add(rightPanel);
-		
+
 		// Associate the Main panel with the HTML host page.
 		RootPanel.get("regionList").add(mainPanel);
 
@@ -149,6 +147,14 @@ public class PopulationWatcher implements EntryPoint {
 				}
 			}
 		});
+
+		// GWT-DND
+		RootPanel.get("regionList").getElement().getStyle().setProperty("position", "relative");
+		dragController = new MyFlexTableDragController(RootPanel.get("regionList"),false);
+		dragController.setBehaviorDragProxy(true);
+		dropController = new MyChartDropController(rightPanel, pieHandler, this);
+		dragController.registerDropController(dropController);
+		
 	}
 
 	/**
@@ -191,7 +197,12 @@ public class PopulationWatcher implements EntryPoint {
 		// Add the region to the table.
 		int row = regionFlexTable.getRowCount();
 		addedRegions.add(region);
-		regionFlexTable.setText(row, 0, region);
+		Label regionLabel = new Label(region);
+		HorizontalPanel regionPanel = new HorizontalPanel();
+		regionPanel.add(regionLabel);
+		regionFlexTable.setWidget(row, 0, regionPanel);
+		dragController.makeDraggable(regionLabel);
+		
 		regionFlexTable.setWidget(row, 2, new Label());
 		regionFlexTable.getCellFormatter().addStyleName(row, 1,
 				"watchListNumericColumn");
@@ -228,12 +239,6 @@ public class PopulationWatcher implements EntryPoint {
 
 			public void onSuccess(Void result) {
 				updateDelistedRegionTable();
-			/*	DataTable pieData = pieHandler.getPieData();
-				PieChart pie = pieHandler.getPie();
-				pieData.addRow();
-				pieData.setValue(2, 0, "Kalmar");
-				pieData.setValue(2, 1, 50);
-				pie.draw(pieData);*/
 			}
 		};
 
@@ -332,9 +337,9 @@ public class PopulationWatcher implements EntryPoint {
 
 		changeWidget.setStyleName(changeStyleName);
 	}
-	
-	private void updateDelistedRegionTable(){
-		if(regionPopulationSvc == null){
+
+	private void updateDelistedRegionTable() {
+		if (regionPopulationSvc == null) {
 			regionPopulationSvc = GWT.create(RegionPopulationService.class);
 		}
 		AsyncCallback<ArrayList<String>> callback = new AsyncCallback<ArrayList<String>>() {
@@ -343,13 +348,20 @@ public class PopulationWatcher implements EntryPoint {
 
 			public void onSuccess(ArrayList<String> result) {
 				int i = 1;
-				for(String region : result)
-				{
+				for (String region : result) {
 					delistedRegionsTable.setText(i, 0, region);
 					i++;
 				}
 			}
 		};
 		regionPopulationSvc.getDelistedRegions(callback);
+	}
+	
+	public FlexTable getRegionFlexTable() {
+		return regionFlexTable;
+	}
+	
+	public ArrayList<String> getAddedRegions() {
+		return addedRegions;
 	}
 }
