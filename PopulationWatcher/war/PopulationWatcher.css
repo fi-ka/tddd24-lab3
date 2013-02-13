@@ -11,6 +11,16 @@ body {
   font-style: italic;
 }
 
+/* delist table all cells*/
+.delistTable {
+	color: silver;
+}
+
+/* delist table header row */
+.delistTableHeader {
+	font-size: 16px;
+}
+
 /* stock list flex table */
 .watchList {
   border: 1px solid silver;
@@ -56,3 +66,4 @@ body {
 	color: red;
 	font-size: 18px;
 }
+

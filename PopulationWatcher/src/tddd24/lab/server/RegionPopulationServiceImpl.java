@@ -101,4 +101,9 @@ public class RegionPopulationServiceImpl extends RemoteServiceServlet implements
 		populations.add(248545);
 
 	}
+
+	@Override
+	public ArrayList<String> getDelistedRegions() {
+		return delistedRegions;
+	}
 }

@@ -5,6 +5,7 @@ import java.util.Date;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.dev.js.rhino.ObjToIntMap.Iterator;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -36,6 +37,7 @@ public class PopulationWatcher implements EntryPoint {
 	private Button delistRegionButton = new Button("Delist");
 	private Label lastUpdatedLabel = new Label();
 	private Label errorMsgLabel = new Label();
+	private FlexTable delistedRegionsTable = new FlexTable();
 
 	private ArrayList<String> addedRegions = new ArrayList<String>();
 
@@ -64,12 +66,19 @@ public class PopulationWatcher implements EntryPoint {
 		regionFlexTable.getCellFormatter().addStyleName(0, 3,
 				"watchListRemoveColumn");
 
+		//create table for delisted regions and set style
+		delistedRegionsTable.setText(0, 0, "Currently Unavailable regions");
+		delistedRegionsTable.getCellFormatter().addStyleName(0,0, "delistTableHeader");
+		delistedRegionsTable.addStyleName("delistTable");
+		updateDelistedRegionTable();
+		
+		
 		// Assemble Add Region panel.
 		addPanel.add(newRegionTextBox);
 		addPanel.add(addRegionButton);
 		addPanel.add(delistRegionButton);
 		addPanel.addStyleName("addPanel");
-
+		
 		// Assemble Main panel.
 		errorMsgLabel.setStyleName("errorMessage");
 		errorMsgLabel.setVisible(false);
@@ -79,6 +88,9 @@ public class PopulationWatcher implements EntryPoint {
 		mainPanel.add(regionFlexTable);
 		mainPanel.add(lastUpdatedLabel);
 		mainPanel.add(addPanel);
+		mainPanel.add(delistedRegionsTable);
+		
+		
 
 		// Associate the Main panel with the HTML host page.
 		RootPanel.get("regionList").add(mainPanel);
@@ -199,6 +211,7 @@ public class PopulationWatcher implements EntryPoint {
 			}
 
 			public void onSuccess(Void result) {
+				updateDelistedRegionTable();
 			}
 		};
 		
@@ -296,5 +309,25 @@ public class PopulationWatcher implements EntryPoint {
 		}
 
 		changeWidget.setStyleName(changeStyleName);
+	}
+	
+	private void updateDelistedRegionTable(){
+		if(regionPopulationSvc == null){
+			regionPopulationSvc = GWT.create(RegionPopulationService.class);
+		}
+		AsyncCallback<ArrayList<String>> callback = new AsyncCallback<ArrayList<String>>() {
+			public void onFailure(Throwable caught) {
+			}
+
+			public void onSuccess(ArrayList<String> result) {
+				int i = 1;
+				for(String region : result)
+				{
+					delistedRegionsTable.setText(i, 0, region);
+					i++;
+				}
+			}
+		};
+		regionPopulationSvc.getDelistedRegions(callback);
 	}
 }
