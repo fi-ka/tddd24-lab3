@@ -1,7 +1,6 @@
 package tddd24.lab.server;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import tddd24.lab.client.DelistedException;
 import tddd24.lab.client.RegionPopulation;
@@ -15,6 +14,8 @@ public class RegionPopulationServiceImpl extends RemoteServiceServlet implements
 	private ArrayList<String> regions = new ArrayList<String>();
 	private ArrayList<String> delistedRegions = new ArrayList<String>();
 	private ArrayList<Integer> populations = new ArrayList<Integer>();
+	private ArrayList<Integer> change = new ArrayList<Integer>();
+	
 	
 
 	public RegionPopulationServiceImpl() {
@@ -22,23 +23,19 @@ public class RegionPopulationServiceImpl extends RemoteServiceServlet implements
 	}
 
 	public RegionPopulation[] getPopulations(String[] addedRegions)  throws DelistedException{
-		final float MAX_POPULATION_CHANGE = 0.01f; // +/- .5%
-		Random rnd = new Random();
-
 		RegionPopulation[] regionPopulations = new RegionPopulation[addedRegions.length];
 		for (int i = 0; i < addedRegions.length; i++) {
 			if(delistedRegions.contains(addedRegions[i]))
 			{
 				throw new DelistedException(addedRegions[i]);
 			}
-			int population = populations.get(regions.indexOf(addedRegions[i]));
-			int maxChangeAmount = Math
-					.round(population * MAX_POPULATION_CHANGE);
-			int change = rnd.nextInt((int) (maxChangeAmount))
-					- (maxChangeAmount / 2);
+			
+			int index = regions.indexOf(addedRegions[i]);
+			int population = populations.get(index);
+			int changeAmount = change.get(index);
 
 			regionPopulations[i] = new RegionPopulation(addedRegions[i],
-					population + change, change);
+					population, changeAmount);
 		}
 
 		return regionPopulations;
@@ -99,11 +96,52 @@ public class RegionPopulationServiceImpl extends RemoteServiceServlet implements
 		populations.add(126299);
 		populations.add(259667);
 		populations.add(248545);
-
+		
+		change.add(37130);
+		change.add(2748);
+		change.add(1825);
+		change.add(1433);
+		change.add(1030);
+		change.add(714);
+		change.add(-446);
+		change.add(39);
+		change.add(-248);
+		change.add(9604);
+		change.add(2240);
+		change.add(10307);
+		change.add(529);
+		change.add(1342);
+		change.add(1501);
+		change.add(-482);
+		change.add(-378);
+		change.add(-470);
+		change.add(-392);
+		change.add(381);
+		change.add(-64);
 	}
 
 	@Override
 	public ArrayList<String> getDelistedRegions() {
 		return delistedRegions;
+	}
+
+	@Override
+	public void addRegions(String[] regionPopulations) throws Exception {
+		for(int i = 0; i < regionPopulations.length; i++)
+		{
+			String[] regionPopulation = regionPopulations[i].split(";");
+			int changeAmount = Integer.parseInt(regionPopulation[2]);
+			int population = Integer.parseInt(regionPopulation[1]);
+			if(!regions.contains(regionPopulation[0])){
+				regions.add(regionPopulation[0]);
+				populations.add(population);
+				change.add(changeAmount);
+			}
+		}
+	}
+
+	@Override
+	public ArrayList<String> getAvailableRegions() {
+		return regions;
 	}
 }

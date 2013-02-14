@@ -7,10 +7,12 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("regionPopulation")
 public interface RegionPopulationService extends RemoteService {
-
-  RegionPopulation[] getPopulations(String[] addedRegions) throws DelistedException;
   Boolean isValidRegion(String region);
-  void delistRegion(String region);
-  ArrayList<String> getDelistedRegions();
   
+  ArrayList<String> getDelistedRegions();
+  RegionPopulation[] getPopulations(String[] addedRegions) throws DelistedException;
+  ArrayList<String> getAvailableRegions();
+  
+  void addRegions(String[] regions) throws Exception;
+  void delistRegion(String region);
 }

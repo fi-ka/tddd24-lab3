@@ -12,12 +12,12 @@ body {
 }
 
 /* delist table all cells*/
-.delistTable {
+.availableRegionsTable {
 	color: silver;
 }
 
 /* delist table header row */
-.delistTableHeader {
+.availableRegionsTableHeader {
 	font-size: 16px;
 }
 

@@ -3,8 +3,6 @@ package tddd24.lab.client;
 import java.util.ArrayList;
 import java.util.Date;
 
-import com.allen_sauer.gwt.dnd.client.PickupDragController;
-
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -15,7 +13,6 @@ import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -23,12 +20,11 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class PopulationWatcher implements EntryPoint {
-
-	private static final int REFRESH_INTERVAL = 5000; // ms
 
 	private HorizontalPanel mainPanel = new HorizontalPanel();
 	private VerticalPanel leftPanel = new VerticalPanel();
@@ -40,9 +36,10 @@ public class PopulationWatcher implements EntryPoint {
 	private Button delistRegionButton = new Button("Delist");
 	private Label lastUpdatedLabel = new Label();
 	private Label errorMsgLabel = new Label();
-	private FlexTable delistedRegionsTable = new FlexTable();
-
-	private MyPieChartHandler pieHandler;
+	
+	private TextArea addToServerArea = new TextArea();
+	private Button addToServerButton = new Button("Add to server");
+	private FlexTable availableRegionsTable = new FlexTable();
 
 	private ArrayList<String> addedRegions = new ArrayList<String>();
 
@@ -75,11 +72,11 @@ public class PopulationWatcher implements EntryPoint {
 				"watchListRemoveColumn");
 
 		// create table for delisted regions and set style
-		delistedRegionsTable.setText(0, 0, "Currently Unavailable regions");
-		delistedRegionsTable.getCellFormatter().addStyleName(0, 0,
-				"delistTableHeader");
-		delistedRegionsTable.addStyleName("delistTable");
-		updateDelistedRegionTable();
+		availableRegionsTable.setText(0, 0, "Currently Available regions");
+		availableRegionsTable.getCellFormatter().addStyleName(0, 0,
+				"availableRegionsTableHeader");
+		availableRegionsTable.addStyleName("availableRegionsTable");
+		updateAvailableRegionTable();
 
 		// Create piechart and add to rightpanel
 		MyPieChartHandler pieHandler = new MyPieChartHandler(rightPanel);
@@ -100,7 +97,9 @@ public class PopulationWatcher implements EntryPoint {
 		leftPanel.add(regionFlexTable);
 		leftPanel.add(lastUpdatedLabel);
 		leftPanel.add(addPanel);
-		leftPanel.add(delistedRegionsTable);
+		leftPanel.add(addToServerArea);
+		leftPanel.add(addToServerButton);
+		leftPanel.add(availableRegionsTable);
 
 		// Assemble Main panel
 		mainPanel.add(leftPanel);
@@ -113,20 +112,20 @@ public class PopulationWatcher implements EntryPoint {
 		newRegionTextBox.setFocus(true);
 
 		// Setup timer to refresh list automatically.
-		Timer refreshTimer = new Timer() {
+	/*	Timer refreshTimer = new Timer() {
 			@Override
 			public void run() {
 				refreshWatchList();
 			}
 		};
-		refreshTimer.scheduleRepeating(REFRESH_INTERVAL);
+		refreshTimer.scheduleRepeating(REFRESH_INTERVAL);*/
 
 		// listen for mouse events on the Add button.
 		addRegionButton.addClickHandler(new ClickHandler() {
 
 			@Override
 			public void onClick(ClickEvent event) {
-				addRegion();
+				addRegion(newRegionTextBox.getText());
 			}
 		});
 
@@ -143,8 +142,14 @@ public class PopulationWatcher implements EntryPoint {
 		newRegionTextBox.addKeyPressHandler(new KeyPressHandler() {
 			public void onKeyPress(KeyPressEvent event) {
 				if (event.getCharCode() == KeyCodes.KEY_ENTER) {
-					addRegion();
+					addRegion(newRegionTextBox.getText());
 				}
+			}
+		});
+		
+		addToServerButton.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+					addToServer(addToServerArea.getText());
 			}
 		});
 
@@ -161,8 +166,8 @@ public class PopulationWatcher implements EntryPoint {
 	 * Add Region to FlexTable. Executed when the user clicks the
 	 * addRegionButton or presses enter in the newRegionTextBox.
 	 */
-	private void addRegion() {
-		final String newRegion = newRegionTextBox.getText().toLowerCase()
+	private void addRegion(String region) {
+		final String newRegion = region.toLowerCase()
 				.trim();
 		newRegionTextBox.setFocus(true);
 
@@ -219,12 +224,37 @@ public class PopulationWatcher implements EntryPoint {
 				int removedIndex = addedRegions.indexOf(region);
 				addedRegions.remove(removedIndex);
 				regionFlexTable.removeRow(removedIndex + 1);
+				if(errorMsgLabel.isVisible())
+				{
+					refreshWatchList();
+				}
 			}
 		});
 		regionFlexTable.setWidget(row, 3, removeRegionButton);
 
 		// Get the region population.
 		refreshWatchList();
+	}
+	
+	private void addToServer(String textRegions){
+		String[] regions = textRegions.split("\n");
+		
+		if(regionPopulationSvc == null)
+			regionPopulationSvc = GWT.create(RegionPopulationService.class);
+		
+		AsyncCallback<Void> callback = new AsyncCallback<Void>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				//handle format
+			}
+
+			@Override
+			public void onSuccess(Void result) {
+				updateAvailableRegionTable();
+			}
+		};
+		regionPopulationSvc.addRegions(regions, callback);
 	}
 
 	private void delistRegion() {
@@ -238,10 +268,10 @@ public class PopulationWatcher implements EntryPoint {
 			}
 
 			public void onSuccess(Void result) {
-				updateDelistedRegionTable();
+				refreshWatchList();
+				
 			}
 		};
-
 		regionPopulationSvc.delistRegion(newRegionTextBox.getText(), callback);
 	}
 
@@ -338,7 +368,7 @@ public class PopulationWatcher implements EntryPoint {
 		changeWidget.setStyleName(changeStyleName);
 	}
 
-	private void updateDelistedRegionTable() {
+	private void updateAvailableRegionTable() {
 		if (regionPopulationSvc == null) {
 			regionPopulationSvc = GWT.create(RegionPopulationService.class);
 		}
@@ -347,14 +377,15 @@ public class PopulationWatcher implements EntryPoint {
 			}
 
 			public void onSuccess(ArrayList<String> result) {
+				availableRegionsTable.clear();
 				int i = 1;
 				for (String region : result) {
-					delistedRegionsTable.setText(i, 0, region);
+					availableRegionsTable.setText(i, 0, region);
 					i++;
 				}
 			}
 		};
-		regionPopulationSvc.getDelistedRegions(callback);
+		regionPopulationSvc.getAvailableRegions(callback);
 	}
 	
 	public FlexTable getRegionFlexTable() {

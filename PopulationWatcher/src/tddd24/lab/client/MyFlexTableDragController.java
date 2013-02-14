@@ -22,8 +22,9 @@ public class MyFlexTableDragController extends PickupDragController{
 		super.newDragProxy(context);
 		List<Widget> list = context.selectedWidgets;
 		Label label = (Label)list.get(0);
-		HTML proxy = new HTML();
-		proxy.setText(label.getText());
-		return proxy;
+		//HTML proxy = new HTML();
+		Label proxyLabel = new Label();
+		proxyLabel.setText(label.getText());
+		return proxyLabel;
 	}
 }
