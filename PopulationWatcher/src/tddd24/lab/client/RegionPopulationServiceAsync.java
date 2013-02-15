@@ -12,5 +12,6 @@ public interface RegionPopulationServiceAsync {
 	  void getAvailableRegions(AsyncCallback<ArrayList<String>> callback);
 	  
 	  void addRegions(String[] regions, AsyncCallback<Void> callback);
+	  void removeRegions(String[] regions, AsyncCallback<Void> callback);
 	  void delistRegion(String region, AsyncCallback<Void> callback);
 }

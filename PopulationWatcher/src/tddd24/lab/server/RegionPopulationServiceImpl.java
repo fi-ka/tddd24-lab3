@@ -1,6 +1,7 @@
 package tddd24.lab.server;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import tddd24.lab.client.DelistedException;
 import tddd24.lab.client.RegionPopulation;
@@ -25,7 +26,8 @@ public class RegionPopulationServiceImpl extends RemoteServiceServlet implements
 	public RegionPopulation[] getPopulations(String[] addedRegions)  throws DelistedException{
 		RegionPopulation[] regionPopulations = new RegionPopulation[addedRegions.length];
 		for (int i = 0; i < addedRegions.length; i++) {
-			if(delistedRegions.contains(addedRegions[i]))
+			Random rnd = new Random();
+			if(!regions.contains(addedRegions[i]))
 			{
 				throw new DelistedException(addedRegions[i]);
 			}
@@ -33,9 +35,11 @@ public class RegionPopulationServiceImpl extends RemoteServiceServlet implements
 			int index = regions.indexOf(addedRegions[i]);
 			int population = populations.get(index);
 			int changeAmount = change.get(index);
-
+			
+			int randomChange = rnd.nextInt(11) - 5;
+			
 			regionPopulations[i] = new RegionPopulation(addedRegions[i],
-					population, changeAmount);
+					population + randomChange, changeAmount + randomChange);
 		}
 
 		return regionPopulations;
@@ -130,12 +134,27 @@ public class RegionPopulationServiceImpl extends RemoteServiceServlet implements
 		for(int i = 0; i < regionPopulations.length; i++)
 		{
 			String[] regionPopulation = regionPopulations[i].split(";");
-			int changeAmount = Integer.parseInt(regionPopulation[2]);
-			int population = Integer.parseInt(regionPopulation[1]);
-			if(!regions.contains(regionPopulation[0])){
-				regions.add(regionPopulation[0]);
+			int changeAmount = Integer.parseInt(regionPopulation[2].trim());
+			int population = Integer.parseInt(regionPopulation[1].trim());
+			String currentRegion = regionPopulation[0].trim().toLowerCase();
+			if(!regions.contains(currentRegion)){
+				regions.add(currentRegion);
 				populations.add(population);
 				change.add(changeAmount);
+			}
+		}
+	}
+	
+	@Override
+	public void removeRegions(String[] regionsRemove) throws Exception {
+		for(int i = 0; i < regionsRemove.length; i++)
+		{
+			String currentRegion = regionsRemove[i].trim().toLowerCase();
+			if(regions.contains(currentRegion)){
+				int index = regions.indexOf(currentRegion);
+				regions.remove(index);
+				populations.remove(index);
+				change.remove(index);
 			}
 		}
 	}

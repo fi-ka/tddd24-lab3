@@ -49,5 +49,9 @@ public class MyPieChartHandler {
 	public DataTable getPieData() {
 		return pieData;
 	}
-
+	
+	public void draw()
+	{
+		pie.draw(pieData, createOptions());
+	}
  }

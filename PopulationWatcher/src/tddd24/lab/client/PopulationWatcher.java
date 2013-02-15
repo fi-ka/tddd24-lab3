@@ -13,6 +13,7 @@ import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -25,7 +26,8 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class PopulationWatcher implements EntryPoint {
-
+	private final static int REFRESH_INTERVAL = 5000;
+	
 	private HorizontalPanel mainPanel = new HorizontalPanel();
 	private VerticalPanel leftPanel = new VerticalPanel();
 	private VerticalPanel rightPanel = new VerticalPanel();
@@ -38,7 +40,9 @@ public class PopulationWatcher implements EntryPoint {
 	private Label errorMsgLabel = new Label();
 	
 	private TextArea addToServerArea = new TextArea();
+	private HorizontalPanel serverButtonsPanel = new HorizontalPanel();
 	private Button addToServerButton = new Button("Add to server");
+	private Button removeFromServerButton = new Button("Remove from server");
 	private FlexTable availableRegionsTable = new FlexTable();
 
 	private ArrayList<String> addedRegions = new ArrayList<String>();
@@ -87,18 +91,26 @@ public class PopulationWatcher implements EntryPoint {
 		addPanel.add(delistRegionButton);
 		addPanel.addStyleName("addPanel");
 
+		//Assamble server buttons panel
+		
+		serverButtonsPanel.add(addToServerButton);
+		serverButtonsPanel.add(removeFromServerButton);
+		
 		// Assemble left panel.
 		errorMsgLabel.setStyleName("errorMessage");
 		errorMsgLabel.setVisible(false);
-
 		lastUpdatedLabel.setText("Last update :");
+		addToServerArea.setWidth("220px");
+		addToServerArea.setHeight("90px");
+		addToServerArea.setText("exempel l\u00e4n;123456;1234");
 
 		leftPanel.add(errorMsgLabel);
 		leftPanel.add(regionFlexTable);
 		leftPanel.add(lastUpdatedLabel);
 		leftPanel.add(addPanel);
 		leftPanel.add(addToServerArea);
-		leftPanel.add(addToServerButton);
+		leftPanel.add(serverButtonsPanel);
+		
 		leftPanel.add(availableRegionsTable);
 
 		// Assemble Main panel
@@ -112,13 +124,13 @@ public class PopulationWatcher implements EntryPoint {
 		newRegionTextBox.setFocus(true);
 
 		// Setup timer to refresh list automatically.
-	/*	Timer refreshTimer = new Timer() {
+		Timer refreshTimer = new Timer() {
 			@Override
 			public void run() {
 				refreshWatchList();
 			}
 		};
-		refreshTimer.scheduleRepeating(REFRESH_INTERVAL);*/
+		refreshTimer.scheduleRepeating(REFRESH_INTERVAL);
 
 		// listen for mouse events on the Add button.
 		addRegionButton.addClickHandler(new ClickHandler() {
@@ -126,15 +138,6 @@ public class PopulationWatcher implements EntryPoint {
 			@Override
 			public void onClick(ClickEvent event) {
 				addRegion(newRegionTextBox.getText());
-			}
-		});
-
-		// listen for mouse events on the Delist button.
-		delistRegionButton.addClickHandler(new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent event) {
-				delistRegion();
 			}
 		});
 
@@ -153,6 +156,11 @@ public class PopulationWatcher implements EntryPoint {
 			}
 		});
 
+		removeFromServerButton.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+					removeFromServer(addToServerArea.getText());
+			}
+		});
 		// GWT-DND
 		RootPanel.get("regionList").getElement().getStyle().setProperty("position", "relative");
 		dragController = new MyFlexTableDragController(RootPanel.get("regionList"),false);
@@ -202,7 +210,7 @@ public class PopulationWatcher implements EntryPoint {
 		// Add the region to the table.
 		int row = regionFlexTable.getRowCount();
 		addedRegions.add(region);
-		Label regionLabel = new Label(region);
+		Label regionLabel = new Label(region.substring(0, 1).toUpperCase() + region.substring(1));
 		HorizontalPanel regionPanel = new HorizontalPanel();
 		regionPanel.add(regionLabel);
 		regionFlexTable.setWidget(row, 0, regionPanel);
@@ -224,10 +232,6 @@ public class PopulationWatcher implements EntryPoint {
 				int removedIndex = addedRegions.indexOf(region);
 				addedRegions.remove(removedIndex);
 				regionFlexTable.removeRow(removedIndex + 1);
-				if(errorMsgLabel.isVisible())
-				{
-					refreshWatchList();
-				}
 			}
 		});
 		regionFlexTable.setWidget(row, 3, removeRegionButton);
@@ -246,7 +250,6 @@ public class PopulationWatcher implements EntryPoint {
 
 			@Override
 			public void onFailure(Throwable caught) {
-				//handle format
 			}
 
 			@Override
@@ -256,23 +259,25 @@ public class PopulationWatcher implements EntryPoint {
 		};
 		regionPopulationSvc.addRegions(regions, callback);
 	}
-
-	private void delistRegion() {
-		// Initialize the service proxy for a region check.
-		if (regionPopulationSvc == null) {
+	
+	private void removeFromServer(String textRegions){
+		String[] regions = textRegions.split("\n");
+		
+		if(regionPopulationSvc == null)
 			regionPopulationSvc = GWT.create(RegionPopulationService.class);
-		}
-		// Set up the callback object.
+		
 		AsyncCallback<Void> callback = new AsyncCallback<Void>() {
+
+			@Override
 			public void onFailure(Throwable caught) {
 			}
 
+			@Override
 			public void onSuccess(Void result) {
-				refreshWatchList();
-				
+				updateAvailableRegionTable();
 			}
 		};
-		regionPopulationSvc.delistRegion(newRegionTextBox.getText(), callback);
+		regionPopulationSvc.removeRegions(regions, callback);
 	}
 
 	/**
@@ -292,7 +297,7 @@ public class PopulationWatcher implements EntryPoint {
 				if (caught instanceof DelistedException) {
 					details = "Region '"
 							+ ((DelistedException) caught).getRegion()
-							+ "' is currently not available";
+							+ "' is no longer available";
 				}
 
 				errorMsgLabel.setText("Error: " + details);
@@ -377,10 +382,10 @@ public class PopulationWatcher implements EntryPoint {
 			}
 
 			public void onSuccess(ArrayList<String> result) {
-				availableRegionsTable.clear();
+				availableRegionsTable.clear(true);
 				int i = 1;
 				for (String region : result) {
-					availableRegionsTable.setText(i, 0, region);
+					availableRegionsTable.setText(i, 0, region.substring(0,1).toUpperCase() + region.substring(1));
 					i++;
 				}
 			}

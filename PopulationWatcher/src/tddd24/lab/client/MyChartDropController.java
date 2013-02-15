@@ -20,12 +20,12 @@ public class MyChartDropController extends AbstractDropController{
 	public void onDrop(DragContext context) {
 		super.onDrop(context);
 		
-		String region = ((Label) context.selectedWidgets.get(0)).getText();
+		String region = ((Label) context.selectedWidgets.get(0)).getText().toLowerCase();
 		int row = populationWatcher.getAddedRegions().indexOf(region) +1;
 		DataTable pieData = pieHandler.getPieData();
 		pieData.addRow();
 		pieData.setValue(pieData.getNumberOfRows()-1, 0, region);
 		pieData.setValue(pieData.getNumberOfRows()-1, 1, Integer.parseInt(populationWatcher.getRegionFlexTable().getText(row, 1).replace(",","")));
-		pieHandler.getPie().draw(pieData);
+		pieHandler.draw();
 	}
 }

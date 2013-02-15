@@ -14,5 +14,6 @@ public interface RegionPopulationService extends RemoteService {
   ArrayList<String> getAvailableRegions();
   
   void addRegions(String[] regions) throws Exception;
+  void removeRegions(String[] regions) throws Exception;
   void delistRegion(String region);
 }
