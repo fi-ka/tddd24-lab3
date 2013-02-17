@@ -1,0 +1,2 @@
+serviceClass: tddd24.lab.client.RegionPopulationService
+path: A54C6B6448B70753A0F68AA4DE8C884E.gwt.rpc
