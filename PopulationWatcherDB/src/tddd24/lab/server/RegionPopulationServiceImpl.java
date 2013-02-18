@@ -15,8 +15,6 @@ public class RegionPopulationServiceImpl extends RemoteServiceServlet implements
 	private DatabaseHandler dbHandler;
 
 	public RegionPopulationServiceImpl() {
-		
-		
 		dbHandler = new DatabaseHandler();
 		dbHandler.initiateDatabase();
 		initiateDataSets();

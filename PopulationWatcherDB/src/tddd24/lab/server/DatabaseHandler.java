@@ -110,12 +110,11 @@ public class DatabaseHandler {
 			Class.forName("org.sqlite.JDBC");
 			Connection conn = DriverManager
 					.getConnection("jdbc:sqlite:/D:/SQLite/RegionPopulationDB");
-			String test = "update regionPopulation set population = " + population + " where region = \"" + region + "\";";
 			PreparedStatement prep = conn
 					.prepareStatement("update regionPopulation set population = ? where region = ?;");
 			prep.setInt(1, population);
 			prep.setString(2, region);
-			int n = prep.executeUpdate();
+			prep.executeUpdate();
 			conn.close();
 		} catch (Exception e) {
 			e.printStackTrace();

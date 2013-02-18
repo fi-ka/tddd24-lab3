@@ -19,13 +19,13 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTMLTable.Cell;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public class PopulationWatcher implements EntryPoint {
 	private final static int REFRESH_INTERVAL = 5000;
@@ -42,8 +42,10 @@ public class PopulationWatcher implements EntryPoint {
 	private Label errorMsgLabel = new Label();
 
 	private DialogBox uploadCellDataDialog = new DialogBox();
+	private HorizontalPanel dialogPanel = new HorizontalPanel();
 	private TextBox dialogTextBox = new TextBox();
-
+	private Button exitDialogButton = new Button("x");
+	
 	private TextArea addToServerArea = new TextArea();
 	private HorizontalPanel serverButtonsPanel = new HorizontalPanel();
 	private Button addToServerButton = new Button("Add to server");
@@ -93,23 +95,33 @@ public class PopulationWatcher implements EntryPoint {
 						uploadCellData(Integer.parseInt(dialogTextBox.getText()));
 						uploadCellDataDialog.hide();
 					} catch (Exception e) {
-						dialogTextBox.setText("Enter a number!");
+						dialogTextBox.setText("Not a valid value!");
 					}
-				}
-				if (event.getCharCode() == KeyCodes.KEY_ESCAPE) {
-					uploadCellDataDialog.hide();
 				}
 			}
 		});
-		uploadCellDataDialog.setWidget(dialogTextBox);
+		
+		exitDialogButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				uploadCellDataDialog.hide();
+			}
+		});
+		
+		dialogPanel.add(dialogTextBox);
+		dialogPanel.add(exitDialogButton);
+		uploadCellDataDialog.setWidget(dialogPanel);
+		
 		
 		// Add clicklistener to table to be able to change individual cells
 		regionFlexTable.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				int row = regionFlexTable.getCellForEvent(event).getRowIndex();
-				cellIndex = regionFlexTable.getCellForEvent(event)
-						.getCellIndex();
+				Cell cell = regionFlexTable.getCellForEvent(event);
+				if(cell == null)
+					return;
+				int row = cell.getRowIndex();
+				cellIndex = cell.getCellIndex();
 				currentUploadRegion = ((Label) ((HorizontalPanel) regionFlexTable
 						.getWidget(row, 0)).getWidget(0)).getText().toLowerCase();
 				uploadCellDataDialog.showRelativeTo(regionFlexTable.getWidget(
