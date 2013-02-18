@@ -25,7 +25,7 @@ public class MyChartDropController extends AbstractDropController{
 		DataTable pieData = pieHandler.getPieData();
 		pieData.addRow();
 		pieData.setValue(pieData.getNumberOfRows()-1, 0, region);
-		pieData.setValue(pieData.getNumberOfRows()-1, 1, Integer.parseInt(populationWatcher.getRegionFlexTable().getText(row, 1).replace(",","")));
+		pieData.setValue(pieData.getNumberOfRows()-1, 1, Integer.parseInt(((Label)populationWatcher.getRegionFlexTable().getWidget(row,1)).getText().replace(",","")));
 		pieHandler.draw();
 	}
 }

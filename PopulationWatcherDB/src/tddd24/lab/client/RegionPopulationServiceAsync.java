@@ -12,4 +12,9 @@ public interface RegionPopulationServiceAsync {
 	  
 	  void addRegions(String[] regions, AsyncCallback<Void> callback);
 	  void removeRegions(String[] regions, AsyncCallback<Void> callback);
+
+	  void updatePopulationData(String region, int data,
+			  AsyncCallback<Void> callback);
+	  void updateChangeData(String region, int data,
+			  AsyncCallback<Void> callback);
 }

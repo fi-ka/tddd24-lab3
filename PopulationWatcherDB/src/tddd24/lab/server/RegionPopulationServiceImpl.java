@@ -98,4 +98,14 @@ public class RegionPopulationServiceImpl extends RemoteServiceServlet implements
 	public ArrayList<String> getAvailableRegions() {
 		return dbHandler.getAllRegions();
 	}
+
+	@Override
+	public void updatePopulationData(String region, int data) {
+		dbHandler.updatePopulation(region, data);
+	}
+	
+	@Override
+	public void updateChangeData(String region, int data) {
+		dbHandler.updateChange(region, data);
+	}
 }

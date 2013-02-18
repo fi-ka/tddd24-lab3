@@ -17,6 +17,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -24,10 +25,11 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 public class PopulationWatcher implements EntryPoint {
 	private final static int REFRESH_INTERVAL = 5000;
-	
+
 	private HorizontalPanel mainPanel = new HorizontalPanel();
 	private VerticalPanel leftPanel = new VerticalPanel();
 	private VerticalPanel rightPanel = new VerticalPanel();
@@ -38,7 +40,10 @@ public class PopulationWatcher implements EntryPoint {
 	private Button delistRegionButton = new Button("Delist");
 	private Label lastUpdatedLabel = new Label();
 	private Label errorMsgLabel = new Label();
-	
+
+	private DialogBox uploadCellDataDialog = new DialogBox();
+	private TextBox dialogTextBox = new TextBox();
+
 	private TextArea addToServerArea = new TextArea();
 	private HorizontalPanel serverButtonsPanel = new HorizontalPanel();
 	private Button addToServerButton = new Button("Add to server");
@@ -52,6 +57,9 @@ public class PopulationWatcher implements EntryPoint {
 
 	private MyFlexTableDragController dragController;
 	private MyChartDropController dropController;
+
+	private int cellIndex;
+	private String currentUploadRegion;
 
 	/**
 	 * Entry point method.
@@ -75,7 +83,42 @@ public class PopulationWatcher implements EntryPoint {
 		regionFlexTable.getCellFormatter().addStyleName(0, 3,
 				"watchListRemoveColumn");
 
-		// create table for delisted regions and set style
+		// Assemble upload cell data DialogBox
+		
+
+		dialogTextBox.addKeyPressHandler(new KeyPressHandler() {
+			public void onKeyPress(KeyPressEvent event) {
+				if (event.getCharCode() == KeyCodes.KEY_ENTER) {
+					try {
+						uploadCellData(Integer.parseInt(dialogTextBox.getText()));
+						uploadCellDataDialog.hide();
+					} catch (Exception e) {
+						dialogTextBox.setText("Enter a number!");
+					}
+				}
+				if (event.getCharCode() == KeyCodes.KEY_ESCAPE) {
+					uploadCellDataDialog.hide();
+				}
+			}
+		});
+		uploadCellDataDialog.setWidget(dialogTextBox);
+		
+		// Add clicklistener to table to be able to change individual cells
+		regionFlexTable.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				int row = regionFlexTable.getCellForEvent(event).getRowIndex();
+				cellIndex = regionFlexTable.getCellForEvent(event)
+						.getCellIndex();
+				currentUploadRegion = ((Label) ((HorizontalPanel) regionFlexTable
+						.getWidget(row, 0)).getWidget(0)).getText().toLowerCase();
+				uploadCellDataDialog.showRelativeTo(regionFlexTable.getWidget(
+						row, cellIndex));
+				uploadCellDataDialog.show();
+			}
+		});
+
+		// create table for available regions and set style
 		availableRegionsTable.setText(0, 0, "Currently Available regions");
 		availableRegionsTable.getCellFormatter().addStyleName(0, 0,
 				"availableRegionsTableHeader");
@@ -91,11 +134,11 @@ public class PopulationWatcher implements EntryPoint {
 		addPanel.add(delistRegionButton);
 		addPanel.addStyleName("addPanel");
 
-		//Assamble server buttons panel
-		
+		// Assamble server buttons panel
+
 		serverButtonsPanel.add(addToServerButton);
 		serverButtonsPanel.add(removeFromServerButton);
-		
+
 		// Assemble left panel.
 		errorMsgLabel.setStyleName("errorMessage");
 		errorMsgLabel.setVisible(false);
@@ -110,7 +153,7 @@ public class PopulationWatcher implements EntryPoint {
 		leftPanel.add(addPanel);
 		leftPanel.add(addToServerArea);
 		leftPanel.add(serverButtonsPanel);
-		
+
 		leftPanel.add(availableRegionsTable);
 
 		// Assemble Main panel
@@ -149,26 +192,28 @@ public class PopulationWatcher implements EntryPoint {
 				}
 			}
 		});
-		
+
 		addToServerButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-					addToServer(addToServerArea.getText());
+				addToServer(addToServerArea.getText());
 			}
 		});
 
 		removeFromServerButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-					removeFromServer(addToServerArea.getText());
+				removeFromServer(addToServerArea.getText());
 			}
 		});
-			
+
 		// GWT-DND
-		RootPanel.get("regionList").getElement().getStyle().setProperty("position", "relative");
-		dragController = new MyFlexTableDragController(RootPanel.get("regionList"),false);
+		RootPanel.get("regionList").getElement().getStyle()
+				.setProperty("position", "relative");
+		dragController = new MyFlexTableDragController(
+				RootPanel.get("regionList"), false);
 		dragController.setBehaviorDragProxy(true);
 		dropController = new MyChartDropController(rightPanel, pieHandler, this);
 		dragController.registerDropController(dropController);
-		
+
 	}
 
 	/**
@@ -176,8 +221,7 @@ public class PopulationWatcher implements EntryPoint {
 	 * addRegionButton or presses enter in the newRegionTextBox.
 	 */
 	private void addRegion(String region) {
-		final String newRegion = region.toLowerCase()
-				.trim();
+		final String newRegion = region.toLowerCase().trim();
 		newRegionTextBox.setFocus(true);
 
 		// Initialize the service proxy for a region check.
@@ -211,12 +255,16 @@ public class PopulationWatcher implements EntryPoint {
 		// Add the region to the table.
 		int row = regionFlexTable.getRowCount();
 		addedRegions.add(region);
-		Label regionLabel = new Label(region.substring(0, 1).toUpperCase() + region.substring(1));
+		Label regionLabel = new Label(region.substring(0, 1).toUpperCase()
+				+ region.substring(1));
 		HorizontalPanel regionPanel = new HorizontalPanel();
 		regionPanel.add(regionLabel);
 		regionFlexTable.setWidget(row, 0, regionPanel);
 		dragController.makeDraggable(regionLabel);
-		
+
+		Label populationLabel = new Label();
+		regionFlexTable.setWidget(row, 1, populationLabel);
+
 		regionFlexTable.setWidget(row, 2, new Label());
 		regionFlexTable.getCellFormatter().addStyleName(row, 1,
 				"watchListNumericColumn");
@@ -240,13 +288,13 @@ public class PopulationWatcher implements EntryPoint {
 		// Get the region population.
 		refreshWatchList();
 	}
-	
-	private void addToServer(String textRegions){
+
+	private void addToServer(String textRegions) {
 		String[] regions = textRegions.split("\n");
-		
-		if(regionPopulationSvc == null)
+
+		if (regionPopulationSvc == null)
 			regionPopulationSvc = GWT.create(RegionPopulationService.class);
-		
+
 		AsyncCallback<Void> callback = new AsyncCallback<Void>() {
 
 			@Override
@@ -261,13 +309,13 @@ public class PopulationWatcher implements EntryPoint {
 		};
 		regionPopulationSvc.addRegions(regions, callback);
 	}
-	
-	private void removeFromServer(String textRegions){
+
+	private void removeFromServer(String textRegions) {
 		String[] regions = textRegions.split("\n");
-		
-		if(regionPopulationSvc == null)
+
+		if (regionPopulationSvc == null)
 			regionPopulationSvc = GWT.create(RegionPopulationService.class);
-		
+
 		AsyncCallback<Void> callback = new AsyncCallback<Void>() {
 
 			@Override
@@ -360,7 +408,8 @@ public class PopulationWatcher implements EntryPoint {
 						population.getChangePercent());
 
 		// Populate the population and Change fields with new data.
-		regionFlexTable.setText(row, 1, populationText);
+		Label populationWidget = (Label) regionFlexTable.getWidget(row, 1);
+		populationWidget.setText(populationText);
 		Label changeWidget = (Label) regionFlexTable.getWidget(row, 2);
 		changeWidget.setText(changeText + " (" + changePercentText + "%)");
 
@@ -387,19 +436,62 @@ public class PopulationWatcher implements EntryPoint {
 				availableRegionsTable.clear(true);
 				int i = 1;
 				for (String region : result) {
-					availableRegionsTable.setText(i, 0, region.substring(0,1).toUpperCase() + region.substring(1));
+					availableRegionsTable.setText(i, 0, region.substring(0, 1)
+							.toUpperCase() + region.substring(1));
 					i++;
 				}
 			}
 		};
 		regionPopulationSvc.getAvailableRegions(callback);
 	}
-	
+
 	public FlexTable getRegionFlexTable() {
 		return regionFlexTable;
 	}
-	
+
 	public ArrayList<String> getAddedRegions() {
 		return addedRegions;
 	}
+
+	private void uploadCellData(int newCellData) {
+		switch (cellIndex) {
+		case 1:
+			uploadPopulationData(currentUploadRegion, newCellData);
+			break;
+		case 2:
+			uploadChangeData(currentUploadRegion, newCellData);
+			break;
+		default:
+		}
+	}
+
+	private void uploadChangeData(String regionKey, int newCellData) {
+		if (regionPopulationSvc == null) {
+			regionPopulationSvc = GWT.create(RegionPopulationService.class);
+		}
+		AsyncCallback<Void> callback = new AsyncCallback<Void>() {
+			public void onFailure(Throwable caught) {
+			}
+
+			public void onSuccess(Void result) {
+			}
+		};
+		regionPopulationSvc.updateChangeData(regionKey, newCellData, callback);
+	}
+
+	private void uploadPopulationData(String regionKey, int newCellData) {
+		if (regionPopulationSvc == null) {
+			regionPopulationSvc = GWT.create(RegionPopulationService.class);
+		}
+		AsyncCallback<Void> callback = new AsyncCallback<Void>() {
+			public void onFailure(Throwable caught) {
+				caught.printStackTrace();
+			}
+
+			public void onSuccess(Void result) {
+			}
+		};
+		regionPopulationSvc.updatePopulationData(regionKey, newCellData, callback);
+	}
+
 }
